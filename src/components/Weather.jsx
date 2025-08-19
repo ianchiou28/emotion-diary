@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { DiaryContext } from '../context/DiaryContext';
+import { translations } from '../utils/translations';
 
 const Weather = () => {
+  const { language } = useContext(DiaryContext);
+  const t = translations[language];
   const [weather, setWeather] = useState({ temp: '--', text: '--' });
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('北京');
@@ -9,30 +13,42 @@ const Weather = () => {
     if (!cityName) return;
     
     setLoading(true);
-    setWeather({ temp: '--', text: '加载中...' });
+    setWeather({ temp: '--', text: t.loading });
     
     try {
       const API_KEY = 'dbdfe64f8ea944aa859efb339b63ac81';
       const API_HOST = 'p92vhdt5yu.re.qweatherapi.com';
       
-      const response = await fetch(`https://${API_HOST}/v7/weather/now?location=${encodeURIComponent(cityName)}&key=${API_KEY}`);
-      const data = await response.json();
+      // 先查询城市获取LocationID
+      const cityResponse = await fetch(`https://${API_HOST}/geo/v2/city/lookup?location=${encodeURIComponent(cityName)}&key=${API_KEY}`);
+      const cityData = await cityResponse.json();
       
-      if (data.code === '200' && data.now) {
-        setWeather({
-          temp: data.now.temp,
-          text: data.now.text,
-          windDir: data.now.windDir,
-          windScale: data.now.windScale,
-          humidity: data.now.humidity,
-          location: cityName
-        });
+      if (cityData.code === '200' && cityData.location && cityData.location.length > 0) {
+        const locationId = cityData.location[0].id;
+        const cityDisplayName = cityData.location[0].name;
+        
+        // 使用LocationID查询天气
+        const weatherResponse = await fetch(`https://${API_HOST}/v7/weather/now?location=${locationId}&key=${API_KEY}`);
+        const weatherData = await weatherResponse.json();
+        
+        if (weatherData.code === '200' && weatherData.now) {
+          setWeather({
+            temp: weatherData.now.temp,
+            text: weatherData.now.text,
+            windDir: weatherData.now.windDir,
+            windScale: weatherData.now.windScale,
+            humidity: weatherData.now.humidity,
+            location: cityDisplayName
+          });
+        } else {
+          setWeather({ temp: 'N/A', text: 'Weather fetch failed', location: cityName });
+        }
       } else {
-        setWeather({ temp: 'N/A', text: '未找到城市', location: cityName });
+        setWeather({ temp: 'N/A', text: 'City not found', location: cityName });
       }
     } catch (error) {
       console.error('Weather fetch error:', error);
-      setWeather({ temp: 'N/A', text: '获取失败', location: cityName });
+      setWeather({ temp: 'N/A', text: 'Network error', location: cityName });
     }
     setLoading(false);
   };
@@ -70,26 +86,26 @@ const Weather = () => {
   if (loading) {
     return (
       <div className="weather-widget">
-        <div className="weather-loading">加载中...</div>
+        <div className="weather-loading">{t.loading}</div>
       </div>
     );
   }
 
   return (
     <div className="weather-widget">
-      <h3>今日天气</h3>
+      <h3>{t.todayWeather}</h3>
       <form onSubmit={handleSearch} className="weather-search">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="输入城市名称"
+          placeholder={t.searchCity}
           className="city-search-input"
         />
-        <button type="submit" className="search-btn">搜索</button>
+        <button type="submit" className="search-btn">{t.search}</button>
       </form>
       {loading ? (
-        <div className="weather-loading">加载中...</div>
+        <div className="weather-loading">{t.loading}</div>
       ) : (
         <div className="weather-details">
           {weather.location && (
@@ -104,13 +120,13 @@ const Weather = () => {
           {weather.windDir && (
             <div className="weather-info">
               <div className="weather-item">
-                <span>风向：{weather.windDir}</span>
+                <span>{t.windDirection}{weather.windDir}</span>
               </div>
               <div className="weather-item">
-                <span>风力：{weather.windScale}级</span>
+                <span>{t.windScale}{weather.windScale}{language === 'zh' ? '级' : ''}</span>
               </div>
               <div className="weather-item">
-                <span>湿度：{weather.humidity}%</span>
+                <span>{t.humidity}{weather.humidity}%</span>
               </div>
             </div>
           )}

@@ -8,10 +8,13 @@ import Weather from './components/Weather';
 import MusicPlayer from './components/MusicPlayer';
 import BackgroundSettings from './components/BackgroundSettings';
 import DiaryWriter from './components/DiaryWriter';
+import LanguageToggle from './components/LanguageToggle';
+import { translations } from './utils/translations';
 import './App.css';
 
 const AppContent = () => {
-  const { backgroundSettings } = useContext(DiaryContext);
+  const { backgroundSettings, language } = useContext(DiaryContext);
+  const t = translations[language];
   
   return (
     <div 
@@ -31,7 +34,10 @@ const AppContent = () => {
         <MusicPlayer />
       </div>
       <div className="main-content">
-        <h1>情绪日记</h1>
+        <div className="header">
+          <h1>{t.title}</h1>
+          <LanguageToggle />
+        </div>
         <DiaryForm />
         <Calendar />
         <DiaryList />

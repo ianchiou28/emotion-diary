@@ -17,6 +17,11 @@ export const DiaryProvider = ({ children }) => {
       opacity: 0.9
     };
   });
+  
+  const [language, setLanguage] = useState(() => {
+    const saved = localStorage.getItem('language');
+    return saved || 'zh';
+  });
 
   // 当日记数据改变时，保存到 localStorage
   useEffect(() => {
@@ -27,6 +32,11 @@ export const DiaryProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('backgroundSettings', JSON.stringify(backgroundSettings));
   }, [backgroundSettings]);
+
+  // 保存语言设置
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
 
   // 添加日记
   const addDiary = (newDiary) => {
@@ -52,7 +62,9 @@ export const DiaryProvider = ({ children }) => {
       setSelectedDate,
       getDiariesByDate,
       backgroundSettings,
-      setBackgroundSettings
+      setBackgroundSettings,
+      language,
+      setLanguage
     }}>
       {children}
     </DiaryContext.Provider>
