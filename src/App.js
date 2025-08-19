@@ -1,11 +1,13 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { DiaryProvider, DiaryContext } from './context/DiaryContext';
 import DiaryForm from './components/DiaryForm';
 import DiaryList from './components/DiaryList';
 import Calendar from './components/Calendar';
 import DateDiaryModal from './components/DateDiaryModal';
 import Weather from './components/Weather';
-import MusicPlayer from './components/MusicPlayer';
+import ChatBot from './components/ChatBot';
+import Navigation from './components/Navigation';
+import EmotionAnalysis from './components/EmotionAnalysis';
 import BackgroundSettings from './components/BackgroundSettings';
 import DiaryWriter from './components/DiaryWriter';
 import LanguageToggle from './components/LanguageToggle';
@@ -15,6 +17,7 @@ import './App.css';
 const AppContent = () => {
   const { backgroundSettings, language } = useContext(DiaryContext);
   const t = translations[language];
+  const [currentPage, setCurrentPage] = useState('diary');
   
   return (
     <div 
@@ -31,17 +34,24 @@ const AppContent = () => {
       <div className="sidebar">
         <BackgroundSettings />
         <Weather />
-        <MusicPlayer />
+        <ChatBot />
       </div>
       <div className="main-content">
         <div className="header">
           <h1>{t.title}</h1>
           <LanguageToggle />
         </div>
-        <DiaryForm />
-        <Calendar />
-        <DiaryList />
-        <DiaryWriter />
+        <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        {currentPage === 'diary' ? (
+          <>
+            <DiaryForm />
+            <Calendar />
+            <DiaryList />
+            <DiaryWriter />
+          </>
+        ) : (
+          <EmotionAnalysis />
+        )}
       </div>
       <DateDiaryModal />
     </div>
