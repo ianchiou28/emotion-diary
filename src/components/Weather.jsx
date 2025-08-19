@@ -12,7 +12,7 @@ const Weather = () => {
     setWeather({ temp: '--', text: '加载中...' });
     
     try {
-      const API_KEY = '9ac7e67bd8bc4b2ea179c05f33e2493f';
+      const API_KEY = 'dbdfe64f8ea944aa859efb339b63ac81';
       const API_HOST = 'p92vhdt5yu.re.qweatherapi.com';
       
       const response = await fetch(`https://${API_HOST}/v7/weather/now?location=${encodeURIComponent(cityName)}&key=${API_KEY}`);
